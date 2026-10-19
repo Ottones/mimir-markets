@@ -1,0 +1,24 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "feat/issue-347-feat-agents-add-a-non-overlapping-signal-aware",
+    "fix/issue-338-fix-ui-disable-pagetransition-stagger",
+    "fix/issue-343-refactor-ui-make-livedeadline-reuse-the",
+    "main",
+    "origin"
+  ],
+  "parent": {
+    "feat/issue-347-feat-agents-add-a-non-overlapping-signal-aware": "main",
+    "fix/issue-338-fix-ui-disable-pagetransition-stagger": "main",
+    "fix/issue-343-refactor-ui-make-livedeadline-reuse-the": "main",
+    "main": null,
+    "origin": "main"
+  },
+  "order": [
+    "main",
+    "feat/issue-347-feat-agents-add-a-non-overlapping-signal-aware",
+    "fix/issue-338-fix-ui-disable-pagetransition-stagger",
+    "fix/issue-343-refactor-ui-make-livedeadline-reuse-the",
+    "origin"
+  ]
+}
