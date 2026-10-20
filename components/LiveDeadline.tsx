@@ -35,7 +35,7 @@ const PHASE_CONFIG = {
  *
  * - Decaying progress bar (not just text)
  * - Absolute deadline in the user's local timezone
- * - Ticking seconds visible when < hrs
+ * - Ticking seconds visible when < 1hr
  * - Color shifts: neutral → amber → red pulse
  * - Phase badges that animate transitions
  */
