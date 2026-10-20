@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatDeadline, getTimeRemaining } from "@/lib/constants";
+import { formatDeadline } from "@/lib/constants";
+import { useCountdown } from "@/lib/hooks";
 import { useLocale } from "next-intl";
 
 interface LiveDeadlineProps {
@@ -34,7 +35,7 @@ const PHASE_CONFIG = {
  *
  * - Decaying progress bar (not just text)
  * - Absolute deadline in the user's local timezone
- * - Ticking seconds visible when < 1hr
+ * - Ticking seconds visible when < hrs
  * - Color shifts: neutral → amber → red pulse
  * - Phase badges that animate transitions
  */
@@ -50,7 +51,7 @@ export default function LiveDeadline({
 }: LiveDeadlineProps) {
   const locale = useLocale();
   const countdownLocale = locale === "en" ? "en" : "es";
-  const [state, setState] = useState(() => getTimeRemaining(deadline, countdownLocale));
+  const state = useCountdown(deadline);
   // Resolve timezone only after mount so SSR markup stays stable and the
   // absolute label always reflects the viewer's zone (not the server's).
   const [mounted, setMounted] = useState(false);
@@ -59,18 +60,10 @@ export default function LiveDeadline({
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    const id = setInterval(
-      () => setState(getTimeRemaining(deadline, countdownLocale)),
-      1000
-    );
-    return () => clearInterval(id);
-  }, [deadline, countdownLocale]);
-
   const absoluteLocal = useMemo(() => {
-    if (!mounted || hideAbsolute) return "";
+    if (!mounted || !Number.isFinite(new Date(deadline * 1000).getTime())) return "";
     return formatDeadline(deadline, countdownLocale);
-  }, [mounted, hideAbsolute, deadline, countdownLocale]);
+  }, [mounted, deadline, countdownLocale]);
 
   // Calculate progress (0→1 where 1 = full time, 0 = expired)
   // Assume max range of 30 days for visual scaling
@@ -101,7 +94,7 @@ export default function LiveDeadline({
   const phaseConfig = phase ? PHASE_CONFIG[phase] : null;
 
   return (
-    <div className={`flex flex-col gap-1.5 ${className}`} role="timer" aria-live="polite">
+    <div className={`flex flex-col gap-1.5 ${className}`} role="timer">
       <div className="flex items-center gap-2">
         {/* Phase badge */}
         <AnimatePresence mode="wait">
@@ -139,7 +132,7 @@ export default function LiveDeadline({
       {absoluteLocal ? (
         <time
           dateTime={new Date(deadline * 1000).toISOString()}
-          className={`font-mono tabular-nums text-pv-muted ${
+          className={hideAbsolute ? "sr-only" : `font-mono tabular-nums text-pv-muted ${
             compact ? "text-[9px] leading-tight" : "text-[10px] leading-snug"
           }`}
           title={absoluteLocal}
