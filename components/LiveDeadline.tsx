@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDeadline } from "@/lib/constants";
 import { useCountdown } from "@/lib/hooks";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { resolveCountdownLocale } from "@i18n/locale";
 
 interface LiveDeadlineProps {
   deadline: number;
@@ -24,10 +25,10 @@ interface LiveDeadlineProps {
 }
 
 const PHASE_CONFIG = {
-  open: { label: "OPEN", color: "text-pv-cyan", bg: "bg-pv-cyan", border: "border-pv-cyan/30" },
-  locked: { label: "LOCKED", color: "text-pv-fuch", bg: "bg-pv-fuch", border: "border-pv-fuch/30" },
-  verifying: { label: "VERIFYING", color: "text-pv-gold", bg: "bg-pv-gold", border: "border-pv-gold/30" },
-  proven: { label: "SETTLED", color: "text-pv-emerald", bg: "bg-pv-emerald", border: "border-pv-emerald/30" },
+  open: { color: "text-pv-cyan", bg: "bg-pv-cyan", border: "border-pv-cyan/30" },
+  locked: { color: "text-pv-fuch", bg: "bg-pv-fuch", border: "border-pv-fuch/30" },
+  verifying: { color: "text-pv-gold", bg: "bg-pv-gold", border: "border-pv-gold/30" },
+  proven: { color: "text-pv-emerald", bg: "bg-pv-emerald", border: "border-pv-emerald/30" },
 } as const;
 
 /**
@@ -50,7 +51,8 @@ export default function LiveDeadline({
   className = "",
 }: LiveDeadlineProps) {
   const locale = useLocale();
-  const countdownLocale = locale === "en" ? "en" : "es";
+  const countdownLocale = resolveCountdownLocale(locale);
+  const t = useTranslations("liveDeadline");
   const state = useCountdown(deadline);
   // Resolve timezone only after mount so SSR markup stays stable and the
   // absolute label always reflects the viewer's zone (not the server's).
@@ -92,6 +94,7 @@ export default function LiveDeadline({
     : "bg-pv-cyan";
 
   const phaseConfig = phase ? PHASE_CONFIG[phase] : null;
+  const phaseLabel = phase ? t(`phase.${phase}`) : "";
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`} role="timer">
@@ -114,7 +117,7 @@ export default function LiveDeadline({
                   phase === "verifying" ? "animate-phase-glow" : ""
                 }`}
               />
-              {phaseConfig.label}
+              {phaseLabel}
             </motion.span>
           )}
         </AnimatePresence>
@@ -149,7 +152,7 @@ export default function LiveDeadline({
               isCritical ? "animate-phase-glow" : ""
             }`}
             initial={{ width: "100%" }}
-            animate={{ width: `${Math.max(progress * 100, 1)}%` }}
+            animate={{ width: `${Math.max(progress * 100, 1)}%`}}
             transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
           />
         </div>
